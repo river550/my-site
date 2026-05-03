@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>積立シミュレーション</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body { font-family: sans-serif; margin: 0; }
+header { background: #333; color: white; padding: 15px; }
+main { padding: 20px; }
+
+.container { display: flex; gap: 20px; }
+
+.box {
+  border: 2px solid;
+  padding: 10px;
+  width: 30%;
+  border-radius: 8px;
+}
+
+.box1 { border-color: #ff6b6b; }
+.box2 { border-color: #4dabf7; }
+.box3 { border-color: #51cf66; }
+
+input, select { width: 100%; margin-bottom: 5px; }
+
+.tabs button { margin-right: 10px; padding: 6px 10px; }
+.active { background: #333; color: white; }
+
+.desc {
+  margin: 10px 0;
+  font-size: 14px;
+  color: #555;
+}
+
+canvas { margin-top: 30px; }
+
+footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: #666;
+  border-top: 1px solid #ccc;
+  padding-top: 15px;
+}
+
+section { margin-top: 40px; }
+
+@media (max-width: 768px) {
+  .container { flex-direction: column; }
+  .box { width: 100%; }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>積立シミュレーション 3パターン比較</h1>
+</header>
+
+<main>
+
+<!-- ★追加：説明 -->
+<section>
+<h2>このツールについて</h2>
+<p>
+本ツールは、積立投資の将来シミュレーションを行うための簡易計算ツールです。
+複数条件を比較しながら資産形成の見通しを立てることができます。
+</p>
+</section>
+
+<!-- ★ここから元のツール（完全維持） -->
+<div class="tabs">
+<button id="tab1" onclick="switchMode('normal')">通常</button>
+<button id="tab2" onclick="switchMode('years')">目標→年数</button>
+<button id="tab3" onclick="switchMode('monthly')">目標→積立</button>
+</div>
+
+<div id="description" class="desc"></div>
+
+<div class="container" id="scenarios"></div>
+
+<button onclick="calculate()">計算</button>
+
+<canvas id="chart"></canvas>
+<!-- ★ここまで元ツール -->
+
+<section>
+<h2>使い方</h2>
+<ol>
+<li>初期資金・積立額・利回りなどの条件を入力します</li>
+<li>計算ボタンを押します</li>
+<li>グラフと結果を確認します</li>
+</ol>
+</section>
+
+<section>
+<h2>注意事項</h2>
+<p>
+本ツールは参考情報として提供しており、将来の投資成果を保証するものではありません。
+市場環境により結果は大きく変動する可能性があります。
+</p>
+</section>
+
+<footer>
+<p>
+本ツールは資産形成の見通しを立てるための簡易シミュレーターです。<br>
+計算結果は参考情報であり、将来の成果を保証するものではありません。
+</p>
+
+<p>
+本ページは個人により作成され、入力されたデータは外部に送信・保存されません。
+</p>
+
+<p>
+本ツールの一部はChatGPTを用いて作成されています。
+</p>
+
+<p><a href="#privacy">プライバシーポリシー</a></p>
+</footer>
+
+<section id="privacy">
+<h2>プライバシーポリシー</h2>
+<p>
+本サイトでは広告配信においてCookieを使用する場合があります。
+Cookieは個人を特定するものではありません。
+</p>
+<p>
+第三者配信の広告サービスを利用する場合、ユーザーの興味に応じた広告を表示することがあります。
+</p>
+<p>
+掲載内容によって生じた損害等について一切の責任を負いかねます。
+</p>
+</section>
+
+<section>
+<h2>運営について</h2>
+<p>本サイトは個人により運営されています。</p>
+</section>
+
+</main>
+
+<script>
+let mode = "normal";
+
+const colors = ["#ff6b6b", "#4dabf7", "#51cf66"];
+
+function switchMode(m) {
+  mode = m;
+
+  document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
+
+  if (m === "normal") document.getElementById("tab1").classList.add("active");
+  if (m === "years") document.getElementById("tab2").classList.add("active");
+  if (m === "monthly") document.getElementById("tab3").classList.add("active");
+
+  const desc = document.getElementById("description");
+  if (m === "normal") desc.innerText = "積立条件から将来の資産推移を計算します。";
+  if (m === "years") desc.innerText = "目標金額に到達するまでの年数を計算します。";
+  if (m === "monthly") desc.innerText = "目標達成に必要な毎月の積立額を逆算します。";
+
+  updateInputState();
+}
+
+function updateInputState() {
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById(`years${i}`).disabled = (mode === "years");
+    document.getElementById(`monthly${i}`).disabled = (mode === "monthly");
+    document.getElementById(`goal${i}`).disabled = (mode === "normal");
+  }
+}
+
+function createScenario(i) {
+  return `
+  <div class="box box${i}">
+    <h3>シナリオ${i}</h3>
+
+    初期<input id="initial${i}" value="0">
+    月積立<input id="monthly${i}" value="30000">
+    年利(%)<input id="rate${i}" value="5">
+    年数<input id="years${i}" value="20">
+    目標<input id="goal${i}" value="10000000">
+
+    増額(年)<input id="boostYear${i}" value="0">
+    増額<input id="boostAmount${i}" value="0">
+
+    <select id="tax${i}">
+      <option value="nisa">NISA</option>
+      <option value="tax">課税</option>
+    </select>
+
+    <div id="result${i}"></div>
+  </div>
+  `;
+}
+
+document.getElementById("scenarios").innerHTML =
+  createScenario(1) + createScenario(2) + createScenario(3);
+
+function effectiveRate(rate, taxType) {
+  return taxType === "nisa" ? rate : rate * (1 - 0.20315);
+}
+
+function simulate(data) {
+  let r = Math.pow(1 + data.rate, 1/12) - 1;
+  let v = data.initial;
+  let h = [v];
+  let invested = data.initial;
+
+  for (let y = 0; y < data.years; y++) {
+    let m = data.monthly;
+    if (y >= data.boostYear) m += data.boostAmount;
+
+    for (let i = 0; i < 12; i++) {
+      v = (v + m) * (1 + r);
+      invested += m;
+    }
+    h.push(v);
+  }
+
+  return { history: h, invested: invested, final: v };
+}
+
+function yearsToGoal(data) {
+  let r = Math.pow(1 + data.rate, 1/12) - 1;
+  let v = data.initial;
+  let y = 0;
+
+  while (v < data.goal && y < 100) {
+    let m = data.monthly;
+    if (y >= data.boostYear) m += data.boostAmount;
+
+    for (let i = 0; i < 12; i++) {
+      v = (v + m) * (1 + r);
+    }
+    y++;
+  }
+  return y;
+}
+
+function requiredMonthly(data) {
+  let r = Math.pow(1 + data.rate, 1/12) - 1;
+  let n = data.years * 12;
+
+  return (data.goal - data.initial * Math.pow(1 + r, n)) /
+         ((Math.pow(1 + r, n) - 1) / r);
+}
+
+function getData(i) {
+  let rate = Number(document.getElementById(`rate${i}`).value) / 100;
+  let tax = document.getElementById(`tax${i}`).value;
+
+  return {
+    initial: +document.getElementById(`initial${i}`).value,
+    monthly: +document.getElementById(`monthly${i}`).value,
+    rate: effectiveRate(rate, tax),
+    years: +document.getElementById(`years${i}`).value,
+    goal: +document.getElementById(`goal${i}`).value,
+    boostYear: +document.getElementById(`boostYear${i}`).value,
+    boostAmount: +document.getElementById(`boostAmount${i}`).value
+  };
+}
+
+let chart;
+
+function calculate() {
+  let datasets = [];
+  let histories = [];
+  let maxLen = 0;
+
+  for (let i = 1; i <= 3; i++) {
+    let d = getData(i);
+    let result = document.getElementById(`result${i}`);
+
+    if (mode === "years") {
+      let y = yearsToGoal(d);
+      result.innerHTML = "必要年数: " + y + "年";
+      d.years = y;
+    }
+
+    if (mode === "monthly") {
+      let m = requiredMonthly(d);
+      result.innerHTML = "必要積立: " + Math.round(m).toLocaleString() + "円";
+      d.monthly = m;
+    }
+
+    let sim = simulate(d);
+    let profit = sim.final - sim.invested;
+
+    if (mode === "normal") {
+      result.innerHTML =
+        "最終: " + Math.round(sim.final).toLocaleString() + "円<br>" +
+        "元本: " + Math.round(sim.invested).toLocaleString() + "円<br>" +
+        "利息: " + Math.round(profit).toLocaleString() + "円";
+    }
+
+    histories.push(sim.history);
+    maxLen = Math.max(maxLen, sim.history.length);
+  }
+
+  let labels = Array.from({length: maxLen}, (_, i) => i);
+
+  for (let i = 0; i < 3; i++) {
+    let padded = [];
+    for (let j = 0; j < maxLen; j++) {
+      padded.push(histories[i][j] ?? null);
+    }
+
+    datasets.push({
+      label: "シナリオ" + (i+1),
+      data: padded,
+      borderColor: colors[i],
+      fill: false
+    });
+  }
+
+  if (chart) chart.destroy();
+
+  chart = new Chart(document.getElementById("chart"), {
+    type: "line",
+    data: { labels, datasets }
+  });
+}
+
+switchMode("normal");
+</script>
+
+</body>
+</html>
