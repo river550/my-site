@@ -3,7 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>積立シミュレーション</title>
+
+<title>積立シミュレーション｜3パターン比較ツール</title>
+
+<meta name="description" content="積立投資の将来シミュレーションを行えるツール。複数条件の比較や必要積立額の計算が可能です。">
+
+<!-- AdSense（審査用：あとで自分のIDに置き換え） -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXX"
+crossorigin="anonymous"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -47,6 +55,11 @@ footer {
 
 section { margin-top: 40px; }
 
+nav a {
+  margin-right: 15px;
+  font-size: 14px;
+}
+
 @media (max-width: 768px) {
   .container { flex-direction: column; }
   .box { width: 100%; }
@@ -58,20 +71,27 @@ section { margin-top: 40px; }
 
 <header>
 <h1>積立シミュレーション 3パターン比較</h1>
+<nav>
+<a href="#about">このサイトについて</a>
+<a href="#privacy">プライバシーポリシー</a>
+<a href="#contact">お問い合わせ</a>
+</nav>
 </header>
 
 <main>
 
-<!-- ★追加：説明 -->
-<section>
-<h2>このツールについて</h2>
+<section id="about">
+<h2>このサイトについて</h2>
 <p>
-本ツールは、積立投資の将来シミュレーションを行うための簡易計算ツールです。
-複数条件を比較しながら資産形成の見通しを立てることができます。
+本サイトは、積立投資の将来シミュレーションを行うためのツールを提供しています。
+複数の条件を比較しながら、資産形成の見通しを立てることができます。
+</p>
+<p>
+
 </p>
 </section>
 
-<!-- ★ここから元のツール（完全維持） -->
+<!-- ツール（そのまま維持） -->
 <div class="tabs">
 <button id="tab1" onclick="switchMode('normal')">通常</button>
 <button id="tab2" onclick="switchMode('years')">目標→年数</button>
@@ -85,7 +105,6 @@ section { margin-top: 40px; }
 <button onclick="calculate()">計算</button>
 
 <canvas id="chart"></canvas>
-<!-- ★ここまで元ツール -->
 
 <section>
 <h2>使い方</h2>
@@ -104,41 +123,42 @@ section { margin-top: 40px; }
 </p>
 </section>
 
-<footer>
-<p>
-本ツールは資産形成の見通しを立てるための簡易シミュレーターです。<br>
-計算結果は参考情報であり、将来の成果を保証するものではありません。
-</p>
-
-<p>
-本ページは個人により作成され、入力されたデータは外部に送信・保存されません。
-</p>
-
-<p>
-本ツールの一部はChatGPTを用いて作成されています。
-</p>
-
-<p><a href="#privacy">プライバシーポリシー</a></p>
-</footer>
-
 <section id="privacy">
 <h2>プライバシーポリシー</h2>
 <p>
-本サイトでは広告配信においてCookieを使用する場合があります。
-Cookieは個人を特定するものではありません。
+本サイトでは、第三者配信の広告サービスを利用する予定です。
+広告配信事業者は、ユーザーの興味に応じた広告を表示するためにCookieを使用することがあります。
 </p>
 <p>
-第三者配信の広告サービスを利用する場合、ユーザーの興味に応じた広告を表示することがあります。
+Cookieはユーザー個人を特定するものではありません。
+ブラウザ設定によりCookieを無効にすることも可能です。
 </p>
 <p>
-掲載内容によって生じた損害等について一切の責任を負いかねます。
+本サイトではアクセス解析を行う場合がありますが、個人を特定する情報は収集していません。
+</p>
+</section>
+
+<section id="contact">
+<h2>お問い合わせ</h2>
+<p>
+<br>
+riverkumo550 (a) gmail.com
 </p>
 </section>
 
 <section>
 <h2>運営について</h2>
-<p>本サイトは個人により運営されています。</p>
+<p>
+本サイトは個人により運営されています。<br>
+本ツールの一部はChatGPTを用いて作成されています。
+</p>
 </section>
+
+<footer>
+<p>
+© 2026 river550
+</p>
+</footer>
 
 </main>
 
